@@ -1,19 +1,20 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 public class HuntAndKillMazeAlgorithm : MazeAlgorithm
 {
-    private int currentRow = 0;
-    private int currentColumn = 0;
+    private bool courseComplete;
+    private int currentColumn;
+    private int currentRow;
 
-    private bool courseComplete = false;
+    private int randomSeedNum;
 
     public HuntAndKillMazeAlgorithm(MazeCell[,] mazeCells) : base(mazeCells)
     {
     }
 
-    public override void CreateMaze()
+    public override void CreateMaze(int randomSeed)
     {
+        randomSeedNum = randomSeed;
         HuntAndKill();
     }
 
@@ -30,9 +31,11 @@ public class HuntAndKillMazeAlgorithm : MazeAlgorithm
 
     private void Kill()
     {
+        
+        Random.seed = randomSeedNum;
         while (RouteStillAvailable(currentRow, currentColumn))
         {
-            int direction = Random.Range(1, 5);
+            var direction = Random.Range(1, 5);
             //int direction = ProceduralNumberGenerator.GetNextNumber();
 
             if (direction == 1 && CellIsAvailable(currentRow - 1, currentColumn))
@@ -72,46 +75,30 @@ public class HuntAndKillMazeAlgorithm : MazeAlgorithm
     {
         courseComplete = true; // Set it to this, and see if we can prove otherwise below!
 
-        for (int r = 0; r < mazeRows; r++)
-        {
-            for (int c = 0; c < mazeColumns; c++)
+        for (var r = 0; r < mazeRows; r++)
+        for (var c = 0; c < mazeColumns; c++)
+            if (!mazeCells[r, c].visited && CellHasAnAdjacentVisitedCell(r, c))
             {
-                if (!mazeCells[r, c].visited && CellHasAnAdjacentVisitedCell(r, c))
-                {
-                    courseComplete = false; // Yep, we found something so definitely do another Kill cycle.
-                    currentRow = r;
-                    currentColumn = c;
-                    DestroyAdjacentWall(currentRow, currentColumn);
-                    mazeCells[currentRow, currentColumn].visited = true;
-                    return; // Exit the function
-                }
+                courseComplete = false; // Yep, we found something so definitely do another Kill cycle.
+                currentRow = r;
+                currentColumn = c;
+                DestroyAdjacentWall(currentRow, currentColumn);
+                mazeCells[currentRow, currentColumn].visited = true;
+                return; // Exit the function
             }
-        }
     }
 
     private bool RouteStillAvailable(int row, int column)
     {
-        int availableRoutes = 0;
+        var availableRoutes = 0;
 
-        if (row > 0 && !mazeCells[row - 1, column].visited)
-        {
-            availableRoutes++;
-        }
+        if (row > 0 && !mazeCells[row - 1, column].visited) availableRoutes++;
 
-        if (row < mazeRows - 1 && !mazeCells[row + 1, column].visited)
-        {
-            availableRoutes++;
-        }
+        if (row < mazeRows - 1 && !mazeCells[row + 1, column].visited) availableRoutes++;
 
-        if (column > 0 && !mazeCells[row, column - 1].visited)
-        {
-            availableRoutes++;
-        }
+        if (column > 0 && !mazeCells[row, column - 1].visited) availableRoutes++;
 
-        if (column < mazeColumns - 1 && !mazeCells[row, column + 1].visited)
-        {
-            availableRoutes++;
-        }
+        if (column < mazeColumns - 1 && !mazeCells[row, column + 1].visited) availableRoutes++;
 
         return availableRoutes > 0;
     }
@@ -119,50 +106,30 @@ public class HuntAndKillMazeAlgorithm : MazeAlgorithm
     private bool CellIsAvailable(int row, int column)
     {
         if (row >= 0 && row < mazeRows && column >= 0 && column < mazeColumns && !mazeCells[row, column].visited)
-        {
             return true;
-        }
-        else
-        {
-            return false;
-        }
+        return false;
     }
 
     private void DestroyWallIfItExists(GameObject wall)
     {
-        if (wall != null)
-        {
-            GameObject.Destroy(wall);
-        }
+        if (wall != null) Object.Destroy(wall);
     }
 
     private bool CellHasAnAdjacentVisitedCell(int row, int column)
     {
-        int visitedCells = 0;
+        var visitedCells = 0;
 
         // Look 1 row up (north) if we're on row 1 or greater
-        if (row > 0 && mazeCells[row - 1, column].visited)
-        {
-            visitedCells++;
-        }
+        if (row > 0 && mazeCells[row - 1, column].visited) visitedCells++;
 
         // Look one row down (south) if we're the second-to-last row (or less)
-        if (row < (mazeRows - 2) && mazeCells[row + 1, column].visited)
-        {
-            visitedCells++;
-        }
+        if (row < mazeRows - 2 && mazeCells[row + 1, column].visited) visitedCells++;
 
         // Look one row left (west) if we're column 1 or greater
-        if (column > 0 && mazeCells[row, column - 1].visited)
-        {
-            visitedCells++;
-        }
+        if (column > 0 && mazeCells[row, column - 1].visited) visitedCells++;
 
         // Look one row right (east) if we're the second-to-last column (or less)
-        if (column < (mazeColumns - 2) && mazeCells[row, column + 1].visited)
-        {
-            visitedCells++;
-        }
+        if (column < mazeColumns - 2 && mazeCells[row, column + 1].visited) visitedCells++;
 
         // return true if there are any adjacent visited cells to this one
         return visitedCells > 0;
@@ -170,12 +137,13 @@ public class HuntAndKillMazeAlgorithm : MazeAlgorithm
 
     private void DestroyAdjacentWall(int row, int column)
     {
-        bool wallDestroyed = false;
+        Random.seed = randomSeedNum;
+
+        var wallDestroyed = false;
 
         while (!wallDestroyed)
         {
-            int direction = Random.Range(1, 5);
-            // int direction = ProceduralNumberGenerator.GetNextNumber();
+            var direction = Random.Range(1, 5);
 
             if (direction == 1 && row > 0 && mazeCells[row - 1, column].visited)
             {
@@ -183,7 +151,7 @@ public class HuntAndKillMazeAlgorithm : MazeAlgorithm
                 DestroyWallIfItExists(mazeCells[row - 1, column].southWall);
                 wallDestroyed = true;
             }
-            else if (direction == 2 && row < (mazeRows - 2) && mazeCells[row + 1, column].visited)
+            else if (direction == 2 && row < mazeRows - 2 && mazeCells[row + 1, column].visited)
             {
                 DestroyWallIfItExists(mazeCells[row, column].southWall);
                 DestroyWallIfItExists(mazeCells[row + 1, column].northWall);
@@ -195,7 +163,7 @@ public class HuntAndKillMazeAlgorithm : MazeAlgorithm
                 DestroyWallIfItExists(mazeCells[row, column - 1].eastWall);
                 wallDestroyed = true;
             }
-            else if (direction == 4 && column < (mazeColumns - 2) && mazeCells[row, column + 1].visited)
+            else if (direction == 4 && column < mazeColumns - 2 && mazeCells[row, column + 1].visited)
             {
                 DestroyWallIfItExists(mazeCells[row, column].eastWall);
                 DestroyWallIfItExists(mazeCells[row, column + 1].westWall);

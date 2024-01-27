@@ -14,5 +14,5 @@ public abstract class MazeAlgorithm
         mazeColumns = mazeCells.GetLength(1);
     }
 
-    public abstract void CreateMaze();
+    public abstract void CreateMaze(int randomSeed);
 }
