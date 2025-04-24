@@ -11,7 +11,7 @@ public class CreateAndJoinRooms : MonoBehaviourPunCallbacks
 
     private void Start()
     {
-        PhotonNetwork.JoinOrCreateRoom("ayaya", new RoomOptions(), new TypedLobby("nameee", LobbyType.Default));
+        PhotonNetwork.JoinOrCreateRoom("RoomName", new RoomOptions(), new TypedLobby("LobbyName", LobbyType.Default));
     }
 
     public void CreateRoom()
